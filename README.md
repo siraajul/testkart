@@ -11,12 +11,15 @@
 [![Cucumber](https://img.shields.io/badge/Cucumber-BDD-23D96C?logo=cucumber&logoColor=white)](https://cucumber.io/)
 [![License](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 
+📖 **[Read the Full Case Study →](CASE_STUDY.md)**
+
 </div>
 
 ---
 
 ## 📋 Table of Contents
 
+- [📖 Case Study](CASE_STUDY.md) — Deep-dive: problem analysis, challenges, solutions & metrics
 - [Challenge Overview](#-challenge-overview)
 - [Tech Stack](#-tech-stack)
 - [Architecture](#-architecture)
