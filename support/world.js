@@ -1,116 +1,62 @@
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // world.js — Custom Cucumber World
-// TestKart — BDD + POM Automation Framework
-// ══════════════════════════════════════════════
-// The World is the shared context object available in all step definitions.
-// It holds the browser instance, page objects, and extracted data.
+// ══════════════════════════════════════════════════════════
+// Shared context across all step definitions.
+// Holds browser instances, page objects, and test data.
 
 const { setWorldConstructor } = require('@cucumber/cucumber');
 const { chromium } = require('playwright');
+const { launchOptions, contextOptions } = require('../config/browser.config');
+const config = require('../config/env.config');
 const HomePage = require('../pages/HomePage');
 const SearchResultsPage = require('../pages/SearchResultsPage');
 
 class CustomWorld {
   constructor() {
-    // Browser instances
     this.browser = null;
     this.context = null;
     this.page = null;
-
-    // Page Objects
     this.homePage = null;
     this.searchResultsPage = null;
-
-    // Test data store — accumulates extracted product data across pages
-    this.productsData = [];
+    this.productsData = []; // Accumulated product data across pages
   }
 
-  /**
-   * Launch the browser and create a fresh context/page.
-   * Configured via .env variables for flexibility.
-   */
+  /** Launch browser, create context/page, initialize page objects. */
   async launchBrowser() {
-    const headless = process.env.HEADLESS === 'true';
-    const slowMo = parseInt(process.env.SLOW_MO) || 0;
-
     console.log('\n  ══════════════════════════════════════════');
     console.log('  🚀 TestKart — Launching Browser');
-    console.log(`  ── Mode: ${headless ? 'Headless' : 'Headed'}`);
+    console.log(`  ── Mode: ${config.headless ? 'Headless' : 'Headed'}`);
     console.log('  ══════════════════════════════════════════\n');
 
-    // Launch Chromium with realistic settings
-    this.browser = await chromium.launch({
-      headless,
-      slowMo,
-      args: [
-        '--start-maximized',
-        '--disable-blink-features=AutomationControlled',
-      ],
-    });
-
-    // Create browser context with realistic viewport and user-agent
-    this.context = await this.browser.newContext({
-      viewport: {
-        width: parseInt(process.env.VIEWPORT_WIDTH) || 1440,
-        height: parseInt(process.env.VIEWPORT_HEIGHT) || 900,
-      },
-      userAgent:
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ' +
-        'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-        'Chrome/122.0.0.0 Safari/537.36',
-      locale: 'en-IN',
-      timezoneId: 'Asia/Kolkata',
-    });
-
-    // Create a new page
+    this.browser = await chromium.launch(launchOptions);
+    this.context = await this.browser.newContext(contextOptions);
     this.page = await this.context.newPage();
 
-    // Set default timeouts
-    this.page.setDefaultTimeout(parseInt(process.env.DEFAULT_TIMEOUT) || 30000);
-    this.page.setDefaultNavigationTimeout(parseInt(process.env.NAVIGATION_TIMEOUT) || 45000);
+    // Apply timeouts
+    this.page.setDefaultTimeout(config.defaultTimeout);
+    this.page.setDefaultNavigationTimeout(config.navigationTimeout);
 
-    // Initialize Page Objects
+    // Initialize page objects
     this.homePage = new HomePage(this.page);
     this.searchResultsPage = new SearchResultsPage(this.page);
   }
 
-  /**
-   * Properly tear down the browser — close page, context, and browser.
-   */
+  /** Tear down browser — close page → context → browser. */
   async closeBrowser() {
     console.log('\n  🧹 Tearing down browser...');
-
-    try {
-      if (this.page) {
-        await this.page.close();
-        this.page = null;
+    for (const resource of ['page', 'context', 'browser']) {
+      try {
+        if (this[resource]) {
+          await this[resource].close();
+          this[resource] = null;
+        }
+      } catch (err) {
+        console.error(`  ⚠️  Error closing ${resource}: ${err.message}`);
       }
-    } catch (error) {
-      console.error(`  ⚠️  Error closing page: ${error.message}`);
     }
-
-    try {
-      if (this.context) {
-        await this.context.close();
-        this.context = null;
-      }
-    } catch (error) {
-      console.error(`  ⚠️  Error closing context: ${error.message}`);
-    }
-
-    try {
-      if (this.browser) {
-        await this.browser.close();
-        this.browser = null;
-      }
-    } catch (error) {
-      console.error(`  ⚠️  Error closing browser: ${error.message}`);
-    }
-
     console.log('  ✅ Browser teardown complete');
   }
 }
 
 setWorldConstructor(CustomWorld);
-
 module.exports = CustomWorld;
