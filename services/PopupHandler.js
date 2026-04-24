@@ -59,14 +59,32 @@ class PopupHandler {
   }
 
   /**
-   * Press Escape key as a last-resort popup dismissal.
+   * Press Escape key + dismiss leftover backdrop overlay.
+   * Flipkart's modal backdrop can persist after Escape, blocking clicks.
    * @returns {Promise<boolean>}
    * @private
    */
   async _tryEscapeKey() {
     try {
       await this.page.keyboard.press('Escape');
+      await this.page.waitForTimeout(300);
+
+      // Flipkart's backdrop overlay may still intercept clicks
+      // Try clicking it or pressing Escape again to clear it
+      try {
+        const backdrop = this.page.locator('div[class*="mcO4kT"], div[class*="RFBkxv"]').first();
+        if (await backdrop.isVisible({ timeout: 1000 })) {
+          await backdrop.click({ force: true });
+          await this.page.waitForTimeout(300);
+        }
+      } catch {
+        // No backdrop — that's fine
+      }
+
+      // Double Escape as final safety measure
+      await this.page.keyboard.press('Escape');
       await this.page.waitForTimeout(500);
+
       console.log('  ✅ Pop-up dismissed using: Escape key');
       return true;
     } catch {
