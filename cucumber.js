@@ -1,15 +1,16 @@
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // Cucumber.js Configuration
 // TestKart — BDD + POM Automation Framework
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 
 module.exports = {
   default: {
     // Feature files location
     paths: ['features/**/*.feature'],
 
-    // Step definitions and support files
+    // Step definitions, support files, and config
     require: [
+      'config/env.config.js',
       'step-definitions/**/*.js',
       'support/**/*.js',
     ],
