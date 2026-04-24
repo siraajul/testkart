@@ -1,61 +1,27 @@
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 // hooks.js — Cucumber Lifecycle Hooks
-// TestKart — BDD + POM Automation Framework
-// ══════════════════════════════════════════════
-// Before: Launch browser before each scenario
-// After: Capture screenshot on failure + teardown browser
+// ══════════════════════════════════════════════════════════
+// Before: Launch browser
+// After: Screenshot on failure + teardown
 // AfterAll: Print summary banner
 
 const { Before, After, AfterAll, Status } = require('@cucumber/cucumber');
 const fs = require('fs');
-require('dotenv').config();
 
-// ──────────────────────────────────────────────
-// Before Hook — Browser Launch
-// ──────────────────────────────────────────────
-
+// ── Before: Launch browser for each scenario ────────────
 Before({ timeout: 60000 }, async function () {
   await this.launchBrowser();
 });
 
-// ──────────────────────────────────────────────
-// After Hook — Screenshot on Failure + Teardown
-// ──────────────────────────────────────────────
-
+// ── After: Capture failure screenshot + teardown ────────
 After({ timeout: 30000 }, async function (scenario) {
-  // Capture screenshot if scenario failed
   if (scenario.result.status === Status.FAILED) {
-    const scenarioName = scenario.pickle.name.replace(/\s+/g, '_').toLowerCase();
-    console.log(`\n  📸 Capturing failure screenshot for: ${scenario.pickle.name}`);
-
-    try {
-      if (this.page) {
-        const screenshotPath = `screenshots/FAIL-${scenarioName}-${Date.now()}.png`;
-        await this.page.screenshot({
-          path: screenshotPath,
-          fullPage: true,
-        });
-        console.log(`  📸 Screenshot saved: ${screenshotPath}`);
-
-        // Attach screenshot to Cucumber report if attach function is available
-        if (typeof this.attach === 'function') {
-          const screenshotBuffer = fs.readFileSync(screenshotPath);
-          await this.attach(screenshotBuffer, 'image/png');
-        }
-      }
-    } catch (error) {
-      console.error(`  ⚠️  Failed to capture screenshot: ${error.message}`);
-    }
+    await this._captureFailureScreenshot(scenario);
   }
-
-  // Always tear down browser
   await this.closeBrowser();
 });
 
-// ──────────────────────────────────────────────
-// AfterAll Hook — Final Summary
-// ──────────────────────────────────────────────
-
+// ── AfterAll: Print final summary banner ────────────────
 AfterAll(function () {
   console.log('\n');
   console.log('  ══════════════════════════════════════════');
@@ -66,3 +32,26 @@ AfterAll(function () {
   console.log('  ══════════════════════════════════════════');
   console.log('\n');
 });
+
+// ── Helper: Screenshot on failure ───────────────────────
+// Extends World prototype to keep hooks.js slim.
+
+const CustomWorld = require('./world');
+
+CustomWorld.prototype._captureFailureScreenshot = async function (scenario) {
+  const name = scenario.pickle.name.replace(/\s+/g, '_').toLowerCase();
+  console.log(`\n  📸 Capturing failure screenshot for: ${scenario.pickle.name}`);
+
+  try {
+    if (!this.page) return;
+    const path = `screenshots/FAIL-${name}-${Date.now()}.png`;
+    await this.page.screenshot({ path, fullPage: true });
+    console.log(`  📸 Screenshot saved: ${path}`);
+
+    if (typeof this.attach === 'function') {
+      await this.attach(fs.readFileSync(path), 'image/png');
+    }
+  } catch (err) {
+    console.error(`  ⚠️  Failed to capture screenshot: ${err.message}`);
+  }
+};
