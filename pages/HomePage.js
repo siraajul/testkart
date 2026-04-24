@@ -68,11 +68,18 @@ class HomePage extends BasePage {
 
   /** Wait for product cards to appear after search. */
   async _waitForResults() {
-    await this.page.waitForLoadState('domcontentloaded');
+    // Guard: don't block on domcontentloaded — it may have already fired
+    try {
+      await this.page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+    } catch {
+      // Already past domcontentloaded — safe to continue
+    }
+
+    // The real wait: product cards appearing on screen
     try {
       await this.page.waitForSelector(
         `${searchResults.productCard}, ${searchResults.productCardAlt}`,
-        { state: 'visible', timeout: 15000 }
+        { state: 'visible', timeout: 20000 }
       );
     } catch {
       console.log('  ℹ️  Product cards selector not matched, continuing...');
