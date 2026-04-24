@@ -1,0 +1,33 @@
+{
+  "name": "testkart",
+  "version": "1.0.0",
+  "description": "BDD + POM Automation Framework — Flipkart E-Commerce SDET Challenge (JS Stack)",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "npx cucumber-js",
+    "test:headed": "HEADLESS=false npx cucumber-js",
+    "test:headless": "HEADLESS=true npx cucumber-js",
+    "install:browsers": "npx playwright install chromium",
+    "report": "node utils/generate-report.js",
+    "pretest": "mkdir -p reports screenshots"
+  },
+  "keywords": [
+    "sdet",
+    "automation",
+    "bdd",
+    "pom",
+    "playwright",
+    "cucumber",
+    "flipkart",
+    "e2e"
+  ],
+  "author": "SDET Challenge",
+  "license": "ISC",
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.2.0",
+    "@playwright/test": "^1.52.0",
+    "playwright": "^1.52.0",
+    "dotenv": "^16.5.0"
+  }
+}
