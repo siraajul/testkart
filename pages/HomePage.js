@@ -41,8 +41,8 @@ class HomePage extends BasePage {
       ? home.searchInput
       : home.searchInputAlt;
 
-    // Type and submit
-    await this.page.click(input);
+    // Type and submit — force:true bypasses any lingering overlay
+    await this.page.click(input, { force: true });
     await this.page.fill(input, searchTerm);
     await this._submitSearch(input);
 
