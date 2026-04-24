@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🛒 TestKart
 
@@ -694,4 +694,3 @@ Scenario: Search and extract laptop prices
 *TestKart — Because real SDET interviews test what you can build, not what you can memorize.*
 
 </div>
-]]>
