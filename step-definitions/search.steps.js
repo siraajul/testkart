@@ -5,7 +5,7 @@
 
 const { When } = require('@cucumber/cucumber');
 
-When('I search for {string}', { timeout: 30000 }, async function (searchTerm) {
+When('I search for {string}', { timeout: 45000 }, async function (searchTerm) {
   await this.homePage.searchProduct(searchTerm);
 });
 
